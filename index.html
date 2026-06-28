@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>차계부 · 카니발 KA4 v1.3</title>
+<title>차계부 · 카니발 KA4 v1.4</title>
 
 <!--
   ============================================================
@@ -198,7 +198,7 @@
   .due-row .cat-name{
     display:flex; align-items:center; gap:7px;
     font-size:13px; font-weight:700; color:#fff;
-    min-width:84px; flex:0 0 auto;
+    min-width:90px; flex:0 0 auto;
   }
   .due-row .swatch{ width:7px; height:7px; border-radius:50%; flex:0 0 auto; }
   .due-row .due-status{
@@ -222,6 +222,8 @@
     text-align:right; min-width:68px;
   }
   .due-row .due-km b{ color:#fff; font-weight:700; }
+  .cat-name-inner{ display:flex; flex-direction:column; gap:1px; }
+  .cat-hint{ font-size:9.5px; color:var(--ink-faint); font-weight:500; white-space:nowrap; }
   .due-last{
     font-family:'JetBrains Mono', monospace; font-size:10.5px;
     color:var(--ink-faint); white-space:nowrap; flex:0 0 auto;
@@ -397,14 +399,14 @@ const NOT_CONFIGURED = !CFG || CFG.apiKey === "YOUR_API_KEY";
 const CAR_NAME = "카니발 KA4 디젤";
 
 const CATS = {
-  engine:    { label:"엔진오일",  color:"#e8862b", interval:10000, match:["엔진오일"] },
-  mission:   { label:"미션오일",  color:"#4a6fa5", interval:60000, match:["미션오일","변속기오일"] },
-  fuel:      { label:"연료필터",  color:"#d2483f", interval:40000, match:["연료필터"] },
-  brake:     { label:"브레이크오일", color:"#3f8f5f", interval:40000, match:["브레이크오일","브레이크"] },
-  air:       { label:"에어필터",  color:"#9b7ede", interval:10000, match:["에어필터"] },
-  oilfilter: { label:"오일필터",  color:"#c99a3e", interval:10000, match:["오일필터"] },
-  labor:     { label:"공임",     color:"#888b94", interval:null,  match:["공임"] },
-  etc:       { label:"기타",     color:"#888b94", interval:null,  match:[] },
+  engine:    { label:"엔진오일",  color:"#e8862b", interval:10000, hint:null,        match:["엔진오일"] },
+  mission:   { label:"미션오일",  color:"#4a6fa5", interval:60000, hint:"6~8만km 교환", match:["미션오일","변속기오일"] },
+  fuel:      { label:"연료필터",  color:"#d2483f", interval:40000, hint:"4~6만km 교환", match:["연료필터"] },
+  brake:     { label:"브레이크오일", color:"#3f8f5f", interval:40000, hint:"2년 교환",   match:["브레이크오일","브레이크"] },
+  air:       { label:"에어필터",  color:"#9b7ede", interval:10000, hint:null,        match:["에어필터"] },
+  oilfilter: { label:"오일필터",  color:"#c99a3e", interval:10000, hint:null,        match:["오일필터"] },
+  labor:     { label:"공임",     color:"#888b94", interval:null,  hint:null,        match:["공임"] },
+  etc:       { label:"기타",     color:"#888b94", interval:null,  hint:null,        match:[] },
 };
 function detectCat(label){
   for(const key in CATS){
@@ -640,7 +642,7 @@ if(NOT_CONFIGURED){
       }
       if(!lastRec){
         return `<div class="due-row">
-          <span class="cat-name"><span class="swatch" style="background:${meta.color}"></span>${meta.label}</span>
+          <span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span>
           <span class="due-status none">기록 없음</span>
           <div class="due-bar-wrap"><div class="due-bar" style="width:0%;background:${meta.color}"></div></div>
           <span class="due-km">—</span>
@@ -659,7 +661,7 @@ if(NOT_CONFIGURED){
         : `<b>${remain.toLocaleString("ko-KR")}</b>km 남음`;
       const lastDateText = lastRec.date ? fmtDate(lastRec.date) : "-";
       return `<div class="due-row">
-        <span class="cat-name"><span class="swatch" style="background:${meta.color}"></span>${meta.label}</span>
+        <span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span>
         <span class="due-status ${statusClass}">${statusText}</span>
         <div class="due-bar-wrap"><div class="due-bar" style="width:${pct}%;background:${barColor}"></div></div>
         <span class="due-km">${remainText}</span>
