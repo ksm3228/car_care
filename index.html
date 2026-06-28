@@ -222,6 +222,11 @@
     text-align:right; min-width:68px;
   }
   .due-row .due-km b{ color:#fff; font-weight:700; }
+  .due-last{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px;
+    color:var(--ink-faint); white-space:nowrap; flex:0 0 auto;
+    text-align:right; min-width:72px;
+  }
 
   /* ---------- timeline / receipt cards ---------- */
   .timeline{ padding: 6px 20px 10px; display:flex; flex-direction:column; gap:14px; }
@@ -652,11 +657,13 @@ if(NOT_CONFIGURED){
       const remainText = remain<=0
         ? `<b style="color:var(--red)">+${Math.abs(remain).toLocaleString("ko-KR")}km</b>`
         : `<b>${remain.toLocaleString("ko-KR")}</b>km 남음`;
+      const lastDateText = lastRec.date ? fmtDate(lastRec.date) : "-";
       return `<div class="due-row">
         <span class="cat-name"><span class="swatch" style="background:${meta.color}"></span>${meta.label}</span>
         <span class="due-status ${statusClass}">${statusText}</span>
         <div class="due-bar-wrap"><div class="due-bar" style="width:${pct}%;background:${barColor}"></div></div>
         <span class="due-km">${remainText}</span>
+        <span class="due-last">${lastDateText}</span>
       </div>`;
     }).join("");
     document.getElementById("dueWrap").innerHTML = dueHtml;
