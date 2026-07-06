@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<title>차계부 v1.5</title>
+<title>차계부 v2.0</title>
 <script type="module">
   window.__FIREBASE_CONFIG__ = {
     apiKey: "AIzaSyC9k6iGUcNObjxQGtlVOuP5_YSpErT9DtA",
@@ -204,7 +204,7 @@ const db = getDatabase(app);
 const provider = new GoogleAuthProvider();
 
 const recordsRef = ref(db, "car_care");
-const metaRef    = ref(db, "car_care_meta/currentKm");
+function metaRef(tabId){ return ref(db, `car_care_meta/km/${tabId||"tab1"}`); }
 const nameRef    = ref(db, "car_care_meta/appName");
 const tabsRef    = ref(db, "car_care_meta/tabs");
 
@@ -287,7 +287,12 @@ function startListeners(){
   ensureTabs();
   unsubName=onValue(nameRef,snap=>{ appName=snap.exists()?snap.val():"차계부"; renderTopbar(); });
   unsubTabs=onValue(tabsRef,snap=>{ tabs=snap.exists()?snap.val():DEFAULT_TABS; renderTabBar(); renderList(); });
-  unsubMeta=onValue(metaRef,snap=>{ manualKm=snap.exists()?snap.val():null; renderList(); });
+  function subscribeKm(){
+    if(unsubMeta){ unsubMeta(); unsubMeta=null; }
+    unsubMeta=onValue(metaRef(activeTabId),snap=>{ manualKm=snap.exists()?snap.val():null; renderList(); });
+  }
+  subscribeKm();
+  window.__subscribeKm=subscribeKm;
   unsub=onValue(recordsRef,snap=>{
     const val=snap.val()||{};
     records=Object.keys(val).map(id=>({id,...val[id]}))
@@ -374,7 +379,8 @@ function renderTabBar(){
       if(e.target.dataset.edit) return;
       activeTabId=btn.dataset.tabid;
       renderTabBar();
-      renderList();
+      if(window.__subscribeKm) window.__subscribeKm();
+      else renderList();
     };
   });
   wrap.querySelectorAll("[data-edit]").forEach(icon=>{
@@ -446,7 +452,7 @@ function renderList(){
   document.getElementById("odoSaveBtn").onclick=async()=>{
     const val=Number(document.getElementById("odoInput").value);
     if(!val||val<0){ toast("올바른 주행거리를 입력해주세요"); return; }
-    await set(metaRef,val);
+    await set(metaRef(activeTabId),val);
     toast(`${val.toLocaleString("ko-KR")}km 저장됐어요`);
     document.getElementById("odoDisplay").style.display="flex";
     document.getElementById("odoEditWrap").style.display="none";
@@ -605,7 +611,7 @@ async function saveRecord(){
   try{
     if(editingId){ await update(ref(db,`car_care/${editingId}`),payload); toast("수정되었습니다"); }
     else{ const nr=push(recordsRef); await set(nr,{...payload,createdAt:Date.now()}); toast("추가되었습니다"); }
-    if(payload.mileage!=null){ const curKm=manualKm!=null?manualKm:0; if(payload.mileage>curKm) await set(metaRef,payload.mileage); }
+    if(payload.mileage!=null){ const curKm=manualKm!=null?manualKm:0; if(payload.mileage>curKm) await set(metaRef(payload.tabId||activeTabId),payload.mileage); }
     closeSheet();
   }catch(e){ toast("저장 실패: "+e.message); }
 }
