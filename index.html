@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>차계부 v1.5</title>
+<script type="module">
+  window.__FIREBASE_CONFIG__ = {
+    apiKey: "AIzaSyC9k6iGUcNObjxQGtlVOuP5_YSpErT9DtA",
+    authDomain: "ward-app-257c4.firebaseapp.com",
+    databaseURL: "https://ward-app-257c4-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "ward-app-257c4",
+    storageBucket: "ward-app-257c4.firebasestorage.app",
+    messagingSenderId: "261869081149",
+    appId: "1:261869081149:web:6f17dcd81b194ee5861054"
+  };
+</script>
+<link rel="preconnect" href="https://cdn.jsdelivr.net"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css"/>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14161b; --bg-2:#1c2027; --bg-3:#23272f;
+  --line-dark:rgba(255,255,255,0.08);
+  --paper:#faf6ec; --paper-2:#f1ead9; --paper-line:rgba(27,29,34,0.10);
+  --ink:#1b1d22; --ink-soft:#71747c; --ink-faint:#9b9ea6;
+  --amber:#e8862b; --amber-deep:#c96a18; --amber-soft:#f6d8ae;
+  --steel:#4a6fa5; --red:#d2483f; --red-soft:#f5d2cf;
+  --green:#3f8f5f; --green-soft:#cfe7da;
+  --radius:18px; --radius-sm:12px;
+  --shadow:0 10px 30px rgba(0,0,0,0.35);
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;padding:0;background:var(--bg);}
+body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,sans-serif;color:#fff;min-height:100vh;overflow-x:hidden;}
+
+/* shell */
+#app{max-width:560px;margin:0 auto;min-height:100vh;position:relative;padding-bottom:calc(96px + var(--safe-bottom));}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:30;display:flex;align-items:center;justify-content:space-between;padding:16px 20px 10px;background:linear-gradient(180deg,var(--bg) 70%,transparent);}
+.topbar .brand{display:flex;align-items:center;gap:8px;flex:1;min-width:0;}
+.topbar .dot{width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);flex:0 0 auto;}
+.brand-text{min-width:0;}
+.brand-title-wrap{display:flex;align-items:center;gap:6px;}
+.topbar h1{font-size:15px;font-weight:700;letter-spacing:0.2px;margin:0;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:200px;}
+.edit-inline-btn{background:none;border:none;color:var(--ink-faint);font-size:12px;cursor:pointer;padding:0;line-height:1;}
+.topbar .sub{font-size:11px;color:var(--ink-faint);margin-top:1px;}
+.iconbtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line-dark);background:var(--bg-3);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;flex:0 0 auto;}
+
+/* inline edit */
+.inline-edit-wrap{display:flex;align-items:center;gap:6px;}
+.inline-input{background:var(--bg-3);border:1.5px solid var(--amber);border-radius:8px;color:#fff;font-size:14px;font-weight:700;font-family:inherit;padding:3px 8px;width:160px;outline:none;}
+.inline-save{background:var(--amber);border:none;border-radius:7px;color:#1b1100;font-weight:800;font-size:11px;padding:4px 9px;cursor:pointer;}
+.inline-cancel{background:none;border:1px solid var(--line-dark);border-radius:7px;color:var(--ink-faint);font-size:11px;padding:4px 8px;cursor:pointer;}
+
+/* tabs */
+.tab-bar{display:flex;gap:6px;padding:4px 20px 12px;overflow-x:auto;scrollbar-width:none;}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-btn{
+  flex:0 0 auto;display:flex;align-items:center;gap:5px;
+  padding:7px 14px;border-radius:20px;border:1px solid var(--line-dark);
+  background:var(--bg-3);color:var(--ink-faint);font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .15s;
+}
+.tab-btn.active{background:var(--amber);border-color:var(--amber);color:#1b1100;}
+.tab-edit-icon{font-size:11px;opacity:0.6;}
+.tab-name-input{background:transparent;border:none;outline:none;font-size:13px;font-weight:700;color:#1b1100;width:60px;font-family:inherit;}
+.tab-name-input::placeholder{color:rgba(27,19,0,0.5);}
+
+/* hero */
+.hero{padding:6px 20px 18px;}
+.hero-card{background:radial-gradient(120% 140% at 0% 0%,#262b34 0%,#181b21 65%);border:1px solid var(--line-dark);border-radius:var(--radius);padding:22px 20px 18px;position:relative;overflow:hidden;}
+.hero-card::after{content:"";position:absolute;right:-40px;top:-40px;width:140px;height:140px;background:radial-gradient(circle,rgba(232,134,43,0.25),transparent 70%);}
+.hero-label{font-size:12px;color:var(--ink-faint);letter-spacing:0.3px;}
+.odometer{display:flex;align-items:baseline;gap:6px;margin-top:6px;}
+.odo-digits{display:flex;gap:3px;}
+.odo-digit{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:700;background:#0e1014;border:1px solid var(--line-dark);border-radius:6px;padding:4px 2px;min-width:24px;text-align:center;color:#fff;box-shadow:inset 0 -2px 0 rgba(255,255,255,0.04),inset 0 2px 4px rgba(0,0,0,0.6);}
+.odo-unit{font-size:14px;color:var(--ink-faint);margin-left:4px;}
+.odo-edit-btn{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:var(--ink-faint);font-size:11px;font-weight:600;padding:4px 9px;cursor:pointer;margin-left:6px;white-space:nowrap;}
+.odo-input-wrap{display:flex;align-items:center;gap:8px;margin-top:8px;}
+.odo-input{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:700;background:#0e1014;border:1.5px solid var(--amber);border-radius:10px;color:#fff;padding:6px 12px;width:160px;outline:none;}
+.odo-save-btn{background:linear-gradient(135deg,var(--amber),var(--amber-deep));border:none;border-radius:10px;color:#1b1100;font-weight:800;font-size:13px;padding:8px 14px;cursor:pointer;}
+.odo-cancel-btn{background:none;border:1px solid var(--line-dark);border-radius:10px;color:var(--ink-faint);font-size:13px;padding:8px 12px;cursor:pointer;}
+.hero-meta{margin-top:4px;font-size:12px;color:var(--ink-faint);}
+.hero-meta b{color:var(--amber-soft);font-weight:600;}
+.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:18px;}
+.stat{background:var(--bg-3);border:1px solid var(--line-dark);border-radius:var(--radius-sm);padding:10px 8px;text-align:center;}
+.stat .v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:700;color:#fff;}
+.stat .k{font-size:10.5px;color:var(--ink-faint);margin-top:3px;}
+
+/* due rows */
+.section-title{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 10px;margin-top:6px;}
+.section-title h2{font-size:14px;margin:0;color:#fff;font-weight:700;}
+.section-title .count{font-size:11px;color:var(--ink-faint);}
+.due-scroll{display:flex;flex-direction:column;gap:0;padding:0 20px 4px;}
+.due-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line-dark);}
+.due-row:last-child{border-bottom:none;}
+.due-row .cat-name{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:700;color:#fff;min-width:90px;flex:0 0 auto;}
+.due-row .swatch{width:7px;height:7px;border-radius:50%;flex:0 0 auto;}
+.due-row .due-status{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:700;flex:0 0 auto;min-width:54px;text-align:center;}
+.due-status.ok{background:var(--green-soft);color:#1d4a31;}
+.due-status.soon{background:var(--amber-soft);color:#7a4307;}
+.due-status.over{background:var(--red-soft);color:#7a201a;}
+.due-status.none{background:#2b2f37;color:var(--ink-faint);}
+.due-row .due-bar-wrap{flex:1;background:#23272f;border-radius:4px;height:5px;overflow:hidden;}
+.due-row .due-bar{height:100%;border-radius:4px;transition:width 0.4s ease;}
+.due-row .due-km{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--ink-faint);white-space:nowrap;flex:0 0 auto;text-align:right;min-width:68px;}
+.due-row .due-km b{color:#fff;font-weight:700;}
+.cat-name-inner{display:flex;flex-direction:column;gap:1px;}
+.cat-hint{font-size:9.5px;color:var(--ink-faint);font-weight:500;white-space:nowrap;}
+.due-last{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--ink-faint);white-space:nowrap;flex:0 0 auto;text-align:right;min-width:72px;}
+
+/* timeline */
+.timeline{padding:6px 20px 10px;display:flex;flex-direction:column;gap:14px;}
+.receipt{background:var(--paper);color:var(--ink);border-radius:var(--radius);box-shadow:var(--shadow);position:relative;padding:16px 16px 14px;}
+.receipt::before{content:"";position:absolute;left:14px;right:14px;top:0;height:1px;background-image:radial-gradient(circle,var(--paper-2) 1.5px,transparent 1.5px);background-size:8px 1px;}
+.receipt-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.receipt-date{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:16px;letter-spacing:-0.2px;}
+.receipt-vendor{font-size:12.5px;color:var(--ink-soft);margin-top:2px;}
+.receipt-badges{display:flex;flex-direction:column;align-items:flex-end;gap:6px;}
+.km-badge{background:var(--steel);color:#fff;font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:20px;}
+.km-badge.empty{background:#cfd3da;color:#5b5e66;}
+.kebab{background:none;border:none;color:var(--ink-faint);font-size:18px;cursor:pointer;padding:2px 4px;line-height:1;}
+.receipt-items{margin-top:12px;padding-top:10px;border-top:1px dashed var(--paper-line);}
+.ritem{display:flex;align-items:baseline;gap:6px;font-size:13px;padding:4px 0;}
+.ritem .cat-dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto;margin-right:2px;}
+.ritem .label{color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.ritem .leader{flex:1;border-bottom:1px dotted var(--paper-line);height:1px;margin:0 4px;transform:translateY(-4px);}
+.ritem .amount{font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--ink);white-space:nowrap;}
+.ritem .amount.zero{color:var(--red);}
+.receipt-total{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--paper-line);}
+.receipt-total .t-label{font-size:12px;color:var(--ink-soft);font-weight:600;}
+.receipt-total .t-amount{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:17px;color:var(--amber-deep);}
+.receipt-memo{margin-top:8px;font-size:11.5px;color:var(--ink-soft);background:var(--paper-2);border-radius:8px;padding:7px 9px;}
+.actions-row{display:flex;gap:8px;margin-top:10px;}
+.mini-btn{flex:1;border:1px solid var(--paper-line);background:transparent;color:var(--ink-soft);font-size:12px;padding:7px 0;border-radius:9px;font-weight:600;cursor:pointer;}
+.mini-btn.danger{color:var(--red);border-color:rgba(210,72,63,0.3);}
+.mini-btn.move{color:var(--steel);border-color:rgba(74,111,165,0.4);}
+.empty-state{text-align:center;padding:60px 20px;color:var(--ink-faint);}
+.empty-state .big{font-size:34px;margin-bottom:8px;}
+
+/* fab */
+.fab{position:fixed;right:20px;bottom:calc(22px + var(--safe-bottom));z-index:40;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--amber),var(--amber-deep));color:#1b1100;border:none;font-size:26px;font-weight:700;box-shadow:0 10px 24px rgba(232,134,43,0.45);display:flex;align-items:center;justify-content:center;cursor:pointer;}
+
+/* scrim & sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:50;opacity:0;pointer-events:none;transition:opacity .2s;}
+.scrim.show{opacity:1;pointer-events:auto;}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:#1c2027;border-radius:22px 22px 0 0;max-width:560px;margin:0 auto;transform:translateY(100%);transition:transform .25s ease;max-height:88vh;overflow-y:auto;padding:14px 18px calc(20px + var(--safe-bottom));border:1px solid var(--line-dark);border-bottom:none;}
+.sheet.show{transform:translateY(0);}
+.sheet-handle{width:36px;height:4px;background:#3a3f49;border-radius:4px;margin:0 auto 14px;}
+.sheet h3{margin:0 0 14px;font-size:16px;color:#fff;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:11.5px;color:var(--ink-faint);margin-bottom:5px;font-weight:600;}
+.field input,.field textarea{width:100%;background:var(--bg-3);border:1px solid var(--line-dark);border-radius:10px;padding:10px 11px;color:#fff;font-size:14px;font-family:inherit;}
+.field input::placeholder,.field textarea::placeholder{color:#5b5f68;}
+.row2{display:grid;grid-template-columns:1.1fr 1fr;gap:10px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.chip{font-size:11.5px;padding:6px 10px;border-radius:20px;border:1px solid var(--line-dark);background:var(--bg-3);color:#cfd2d8;cursor:pointer;}
+.item-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.item-row input.label-in{flex:1.3;}
+.item-row input.amount-in{flex:1;}
+.item-row .rm{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer;padding:0 4px;}
+.add-item-btn{width:100%;padding:9px 0;border-radius:10px;border:1px dashed var(--line-dark);background:transparent;color:var(--ink-faint);font-size:12.5px;cursor:pointer;margin-top:2px;}
+.sheet-total{display:flex;justify-content:space-between;align-items:center;margin:14px 0;font-size:13px;color:var(--ink-faint);}
+.sheet-total .v{font-family:'JetBrains Mono',monospace;font-weight:800;font-size:18px;color:var(--amber);}
+.save-btn{width:100%;padding:13px 0;border-radius:12px;border:none;background:linear-gradient(135deg,var(--amber),var(--amber-deep));color:#1b1100;font-weight:800;font-size:14.5px;cursor:pointer;}
+.cancel-link{display:block;text-align:center;margin-top:10px;color:var(--ink-faint);font-size:12.5px;background:none;border:none;width:100%;padding:8px;cursor:pointer;}
+
+/* move sheet */
+.move-tab-btn{width:100%;padding:13px 16px;border-radius:12px;border:1px solid var(--line-dark);background:var(--bg-3);color:#fff;font-size:14px;font-weight:600;cursor:pointer;text-align:left;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.move-tab-btn.current{border-color:var(--amber);color:var(--amber);}
+.move-tab-btn .tab-badge{font-size:11px;background:var(--amber);color:#1b1100;padding:2px 7px;border-radius:10px;font-weight:700;}
+
+/* gate */
+.gate{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:30px;text-align:center;}
+.gate .icon{font-size:44px;margin-bottom:14px;}
+.gate h2{font-size:18px;margin:0 0 6px;}
+.gate p{font-size:13px;color:var(--ink-faint);margin:0 0 22px;line-height:1.6;}
+.google-btn{display:flex;align-items:center;gap:10px;background:#fff;color:#1b1d22;border:none;border-radius:12px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(100px + var(--safe-bottom));transform:translateX(-50%);background:#fff;color:#1b1d22;font-size:13px;font-weight:600;padding:10px 18px;border-radius:30px;box-shadow:0 8px 20px rgba(0,0,0,0.3);z-index:80;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-6px);}
+.loading{display:flex;align-items:center;justify-content:center;min-height:60vh;color:var(--ink-faint);font-size:13px;}
+</style>
+</head>
+<body>
+<div id="root"><div class="loading">불러오는 중…</div></div>
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { getDatabase, ref, push, set, update, remove, onValue, get } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-database.js";
+
+const CFG = window.__FIREBASE_CONFIG__;
+const app = initializeApp(CFG);
+const auth = getAuth(app);
+const db = getDatabase(app);
+const provider = new GoogleAuthProvider();
+
+const recordsRef = ref(db, "car_care");
+const metaRef    = ref(db, "car_care_meta/currentKm");
+const nameRef    = ref(db, "car_care_meta/appName");
+const tabsRef    = ref(db, "car_care_meta/tabs");
+
+const DEFAULT_TABS = [
+  {id:"tab1", name:"카니발"},
+  {id:"tab2", name:"BMW"},
+  {id:"tab3", name:"기타"}
+];
+
+const CATS = {
+  engine:    {label:"엔진오일",    color:"#e8862b", interval:10000, hint:null,          match:["엔진오일"]},
+  mission:   {label:"미션오일",    color:"#4a6fa5", interval:60000, hint:"6~8만km 교환", match:["미션오일","변속기오일"]},
+  fuel:      {label:"연료필터",    color:"#d2483f", interval:40000, hint:"4~6만km 교환", match:["연료필터"]},
+  brake:     {label:"브레이크오일", color:"#3f8f5f", interval:40000, hint:"2년 교환",    match:["브레이크오일","브레이크"]},
+  air:       {label:"에어필터",    color:"#9b7ede", interval:10000, hint:null,          match:["에어필터"]},
+  oilfilter: {label:"오일필터",    color:"#c99a3e", interval:10000, hint:null,          match:["오일필터"]},
+  labor:     {label:"공임",        color:"#888b94", interval:null,  hint:null,          match:["공임"]},
+  etc:       {label:"기타",        color:"#888b94", interval:null,  hint:null,          match:[]},
+};
+function detectCat(label){
+  for(const k in CATS){ if(k==="etc") continue; if(CATS[k].match.some(m=>label.includes(m))) return k; }
+  return "etc";
+}
+
+const SEED_RECORDS = [
+  {date:"2024-04-24",mileage:null,vendor:"쿠팡",tabId:"tab1",items:[{label:"오일필터+에어필터 (현대모비스 순정, KA4 2.2 디젤)",amount:18940},{label:"배송비",amount:3000}],memo:""},
+  {date:"2024-07-01",mileage:51182,vendor:"공임나라 옥곡점",tabId:"tab1",items:[{label:"공임비 (엔진오일 6L·에어필터·오일필터 지참)",amount:24000}],memo:""},
+  {date:"2024-12-10",mileage:58000,vendor:"공임나라 옥곡점",tabId:"tab1",items:[{label:"공임비 (엔진오일 6L 지참)",amount:24000},{label:"오일필터, 에어필터",amount:15000},{label:"브레이크오일",amount:0}],memo:"브레이크오일 금액 미기재 — 확인 후 수정해주세요"},
+  {date:"2025-07-25",mileage:68700,vendor:"공임나라 옥곡점",tabId:"tab1",items:[{label:"공임비 (엔진오일 6L 지참)",amount:24000},{label:"오일필터, 에어필터 재료대",amount:15000},{label:"연료필터",amount:118500}],memo:""},
+  {date:"2026-06-20",mileage:81400,vendor:"공임나라 지산점",tabId:"tab1",items:[{label:"엔진오일",amount:111200},{label:"미션오일",amount:165000}],memo:""},
+];
+
+const root = document.getElementById("root");
+const scrim = document.getElementById("scrim");
+const sheetEl = document.getElementById("sheet");
+const toastEl = document.getElementById("toast");
+
+function toast(msg){ toastEl.textContent=msg; toastEl.classList.add("show"); setTimeout(()=>toastEl.classList.remove("show"),1800); }
+function won(n){ return (n||0).toLocaleString("ko-KR")+"원"; }
+function fmtDate(iso){ const d=new Date(iso+"T00:00:00"); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`; }
+function recordTotal(r){ return (r.items||[]).reduce((s,i)=>s+(Number(i.amount)||0),0); }
+function closeSheet(){ scrim.classList.remove("show"); sheetEl.classList.remove("show"); }
+
+let records=[], manualKm=null, appName="차계부", tabs=DEFAULT_TABS, activeTabId="tab1";
+let unsub=null, unsubMeta=null, unsubName=null, unsubTabs=null;
+let editingId=null, formItems=[];
+
+onAuthStateChanged(auth, user=>{
+  if(user){ renderShell(user); startListeners(); }
+  else {
+    [unsub,unsubMeta,unsubName,unsubTabs].forEach(u=>{ if(u){u();} });
+    renderGate();
+  }
+});
+
+function renderGate(){
+  root.innerHTML=`<div class="gate"><div class="icon">🚗</div><h2>차계부</h2><p>구글 계정으로 로그인해주세요.</p>
+    <button class="google-btn" id="loginBtn">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 0 1-1.8 2.72v2.26h2.9C16.64 14.2 17.64 11.94 17.64 9.2z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.96v2.33A9 9 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 0 1 3.66 9c0-.59.1-1.17.29-1.7V4.97H.96A9 9 0 0 0 0 9c0 1.45.35 2.83.96 4.03l2.99-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 0 0 .96 4.97l2.99 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+      Google로 로그인
+    </button></div>`;
+  document.getElementById("loginBtn").onclick=()=>signInWithPopup(auth,provider).catch(e=>toast("로그인 실패: "+e.message));
+}
+
+async function ensureSeed(){
+  const snap=await get(recordsRef);
+  if(snap.exists()) return;
+  const updates={};
+  SEED_RECORDS.forEach(r=>{ const nr=push(recordsRef); updates[nr.key]={...r,total:recordTotal(r),createdAt:Date.now()}; });
+  await update(recordsRef,updates);
+}
+
+async function ensureTabs(){
+  const snap=await get(tabsRef);
+  if(!snap.exists()) await set(tabsRef, DEFAULT_TABS);
+}
+
+function startListeners(){
+  ensureSeed();
+  ensureTabs();
+  unsubName=onValue(nameRef,snap=>{ appName=snap.exists()?snap.val():"차계부"; renderTopbar(); });
+  unsubTabs=onValue(tabsRef,snap=>{ tabs=snap.exists()?snap.val():DEFAULT_TABS; renderTabBar(); renderList(); });
+  unsubMeta=onValue(metaRef,snap=>{ manualKm=snap.exists()?snap.val():null; renderList(); });
+  unsub=onValue(recordsRef,snap=>{
+    const val=snap.val()||{};
+    records=Object.keys(val).map(id=>({id,...val[id]}))
+      .sort((a,b)=>b.date.localeCompare(a.date)||(b.createdAt||0)-(a.createdAt||0));
+    renderList();
+  },err=>toast("동기화 오류: "+err.message));
+}
+
+let currentUser=null;
+function renderShell(user){
+  currentUser=user;
+  root.innerHTML=`
+    <div id="app">
+      <div class="topbar" id="topbarWrap"></div>
+      <div class="tab-bar" id="tabBarWrap"></div>
+      <div class="hero" id="heroWrap"></div>
+      <div class="section-title"><h2>다음 정비 예상</h2></div>
+      <div class="due-scroll" id="dueWrap"></div>
+      <div class="section-title"><h2>정비 기록</h2><span class="count" id="countLabel"></span></div>
+      <div class="timeline" id="timeline"></div>
+    </div>
+    <button class="fab" id="fabBtn">＋</button>`;
+  document.getElementById("fabBtn").onclick=()=>openSheet(null);
+  scrim.onclick=closeSheet;
+  renderTopbar();
+}
+
+function renderTopbar(){
+  const wrap=document.getElementById("topbarWrap");
+  if(!wrap) return;
+  wrap.innerHTML=`
+    <div class="brand">
+      <span class="dot"></span>
+      <div class="brand-text">
+        <div class="brand-title-wrap" id="titleDisplay">
+          <h1 id="appNameText">${appName}</h1>
+          <button class="edit-inline-btn" id="editNameBtn" title="제목 수정">✏️</button>
+        </div>
+        <div class="inline-edit-wrap" id="titleEditWrap" style="display:none;">
+          <input class="inline-input" id="nameInput" value="${appName}" maxlength="20"/>
+          <button class="inline-save" id="nameSaveBtn">저장</button>
+          <button class="inline-cancel" id="nameCancelBtn">취소</button>
+        </div>
+        <div class="sub">v1.5 · ${currentUser?currentUser.email:""}</div>
+      </div>
+    </div>
+    <button class="iconbtn" id="logoutBtn" title="로그아웃">⎋</button>`;
+  document.getElementById("logoutBtn").onclick=()=>signOut(auth);
+  document.getElementById("editNameBtn").onclick=()=>{
+    document.getElementById("titleDisplay").style.display="none";
+    document.getElementById("titleEditWrap").style.display="flex";
+    document.getElementById("nameInput").focus();
+  };
+  document.getElementById("nameCancelBtn").onclick=()=>{
+    document.getElementById("titleDisplay").style.display="flex";
+    document.getElementById("titleEditWrap").style.display="none";
+  };
+  document.getElementById("nameSaveBtn").onclick=async()=>{
+    const v=document.getElementById("nameInput").value.trim();
+    if(!v) return;
+    await set(nameRef,v);
+    toast("제목 변경됐어요");
+    document.getElementById("titleDisplay").style.display="flex";
+    document.getElementById("titleEditWrap").style.display="none";
+  };
+  document.getElementById("nameInput").onkeydown=e=>{
+    if(e.key==="Enter") document.getElementById("nameSaveBtn").click();
+    if(e.key==="Escape") document.getElementById("nameCancelBtn").click();
+  };
+}
+
+function renderTabBar(){
+  const wrap=document.getElementById("tabBarWrap");
+  if(!wrap) return;
+  wrap.innerHTML=(tabs||DEFAULT_TABS).map(tab=>{
+    const isActive=tab.id===activeTabId;
+    return `<button class="tab-btn${isActive?" active":""}" data-tabid="${tab.id}">
+      <span class="tab-label-text" data-tabid="${tab.id}">${tab.name}</span>
+      <span class="tab-edit-icon" data-edit="${tab.id}" title="탭 이름 수정">✏️</span>
+    </button>`;
+  }).join("");
+  wrap.querySelectorAll(".tab-btn").forEach(btn=>{
+    btn.onclick=e=>{
+      if(e.target.dataset.edit) return;
+      activeTabId=btn.dataset.tabid;
+      renderTabBar();
+      renderList();
+    };
+  });
+  wrap.querySelectorAll("[data-edit]").forEach(icon=>{
+    icon.onclick=e=>{
+      e.stopPropagation();
+      const tabId=icon.dataset.edit;
+      const tab=tabs.find(t=>t.id===tabId);
+      openTabNameSheet(tab);
+    };
+  });
+}
+
+function openTabNameSheet(tab){
+  sheetEl.innerHTML=`
+    <div class="sheet-handle"></div>
+    <h3>탭 이름 수정</h3>
+    <div class="field">
+      <label>탭 이름</label>
+      <input type="text" id="tabNameInput" value="${tab.name}" maxlength="10" />
+    </div>
+    <button class="save-btn" id="tabNameSave">저장</button>
+    <button class="cancel-link" id="tabNameCancel">취소</button>`;
+  sheetEl.querySelector("#tabNameSave").onclick=async()=>{
+    const v=sheetEl.querySelector("#tabNameInput").value.trim();
+    if(!v) return;
+    const newTabs=(tabs||DEFAULT_TABS).map(t=>t.id===tab.id?{...t,name:v}:t);
+    await set(tabsRef,newTabs);
+    toast("탭 이름 변경됐어요");
+    closeSheet();
+  };
+  sheetEl.querySelector("#tabNameCancel").onclick=closeSheet;
+  scrim.classList.add("show");
+  sheetEl.classList.add("show");
+}
+
+function renderList(){
+  if(!document.getElementById("heroWrap")) return;
+  const tabRecords=records.filter(r=>(r.tabId||"tab1")===activeTabId);
+  const withKm=tabRecords.filter(r=>r.mileage!=null).sort((a,b)=>(b.mileage||0)-(a.mileage||0));
+  const derivedKm=withKm.length?withKm[0].mileage:0;
+  const currentKm=manualKm!=null?manualKm:derivedKm;
+  const lastDate=tabRecords.length?tabRecords[0].date:null;
+  const totalSpend=tabRecords.reduce((s,r)=>s+(r.total??recordTotal(r)),0);
+
+  // hero
+  const digits=String(currentKm||0).split("");
+  document.getElementById("heroWrap").innerHTML=`
+    <div class="hero-card">
+      <div class="hero-label">현재 주행거리</div>
+      <div class="odometer" id="odoDisplay">
+        <div class="odo-digits">${digits.map(d=>`<div class="odo-digit">${d}</div>`).join("")}</div>
+        <span class="odo-unit">km</span>
+        <button class="odo-edit-btn" id="odoEditBtn">✏️ 수정</button>
+      </div>
+      <div class="odo-input-wrap" id="odoEditWrap" style="display:none;">
+        <input class="odo-input" type="number" id="odoInput" value="${currentKm||""}" placeholder="주행거리 입력"/>
+        <button class="odo-save-btn" id="odoSaveBtn">저장</button>
+        <button class="odo-cancel-btn" id="odoCancelBtn">취소</button>
+      </div>
+      <div class="hero-meta">마지막 정비 <b>${lastDate?fmtDate(lastDate):"-"}</b></div>
+      <div class="stat-row">
+        <div class="stat"><div class="v">${totalSpend.toLocaleString("ko-KR")}</div><div class="k">총 지출(원)</div></div>
+        <div class="stat"><div class="v">${tabRecords.length}</div><div class="k">정비 횟수</div></div>
+        <div class="stat"><div class="v">${currentKm?currentKm.toLocaleString("ko-KR"):"-"}</div><div class="k">현재 거리(km)</div></div>
+      </div>
+    </div>`;
+  document.getElementById("odoEditBtn").onclick=()=>{ document.getElementById("odoDisplay").style.display="none"; document.getElementById("odoEditWrap").style.display="flex"; document.getElementById("odoInput").focus(); };
+  document.getElementById("odoCancelBtn").onclick=()=>{ document.getElementById("odoDisplay").style.display="flex"; document.getElementById("odoEditWrap").style.display="none"; };
+  document.getElementById("odoSaveBtn").onclick=async()=>{
+    const val=Number(document.getElementById("odoInput").value);
+    if(!val||val<0){ toast("올바른 주행거리를 입력해주세요"); return; }
+    await set(metaRef,val);
+    toast(`${val.toLocaleString("ko-KR")}km 저장됐어요`);
+    document.getElementById("odoDisplay").style.display="flex";
+    document.getElementById("odoEditWrap").style.display="none";
+  };
+  document.getElementById("odoInput").onkeydown=e=>{ if(e.key==="Enter") document.getElementById("odoSaveBtn").click(); if(e.key==="Escape") document.getElementById("odoCancelBtn").click(); };
+
+  // due
+  const dueCats=["engine","mission","fuel","brake"];
+  document.getElementById("dueWrap").innerHTML=dueCats.map(key=>{
+    const meta=CATS[key];
+    let lastRec=null;
+    for(const r of withKm){ if((r.items||[]).some(i=>detectCat(i.label)===key)){ lastRec=r; break; } }
+    if(!lastRec) return `<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status none">기록 없음</span><div class="due-bar-wrap"><div class="due-bar" style="width:0%;background:${meta.color}"></div></div><span class="due-km">—</span></div>`;
+    const nextDue=lastRec.mileage+meta.interval, remain=nextDue-currentKm;
+    let statusClass="ok",statusText="정상";
+    if(remain<=0){statusClass="over";statusText="교체 필요";}
+    else if(remain<=5000){statusClass="soon";statusText="곧 교체";}
+    const pct=Math.min(100,Math.max(0,Math.round((currentKm-lastRec.mileage)/meta.interval*100)));
+    const barColor=remain<=0?"var(--red)":remain<=5000?"var(--amber)":meta.color;
+    const remainText=remain<=0?`<b style="color:var(--red)">+${Math.abs(remain).toLocaleString("ko-KR")}km</b>`:`<b>${remain.toLocaleString("ko-KR")}</b>km 남음`;
+    return `<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status ${statusClass}">${statusText}</span><div class="due-bar-wrap"><div class="due-bar" style="width:${pct}%;background:${barColor}"></div></div><span class="due-km">${remainText}</span><span class="due-last">${lastRec.date?fmtDate(lastRec.date):"-"}</span></div>`;
+  }).join("");
+
+  document.getElementById("countLabel").textContent=`${tabRecords.length}건`;
+
+  const tl=document.getElementById("timeline");
+  if(tabRecords.length===0){ tl.innerHTML=`<div class="empty-state"><div class="big">🧾</div>이 탭에 기록이 없어요<br/>＋ 버튼으로 추가해보세요</div>`; return; }
+  tl.innerHTML=tabRecords.map(r=>{
+    const total=r.total??recordTotal(r);
+    const itemsHtml=(r.items||[]).map(i=>{
+      const c=CATS[detectCat(i.label)];
+      return `<div class="ritem"><span class="cat-dot" style="background:${c.color}"></span><span class="label">${i.label}</span><span class="leader"></span><span class="amount ${Number(i.amount)===0?"zero":""}">${won(i.amount)}</span></div>`;
+    }).join("");
+    return `<div class="receipt" data-id="${r.id}">
+      <div class="receipt-top">
+        <div><div class="receipt-date">${fmtDate(r.date)}</div><div class="receipt-vendor">${r.vendor||""}</div></div>
+        <div class="receipt-badges">
+          ${r.mileage!=null?`<span class="km-badge">${r.mileage.toLocaleString("ko-KR")}km</span>`:`<span class="km-badge empty">거리 없음</span>`}
+          <button class="kebab" data-act="menu">⋮</button>
+        </div>
+      </div>
+      <div class="receipt-items">${itemsHtml}</div>
+      <div class="receipt-total"><span class="t-label">합계</span><span class="t-amount">${won(total)}</span></div>
+      ${r.memo?`<div class="receipt-memo">${r.memo}</div>`:""}
+      <div class="actions-row" data-actions style="display:none;">
+        <button class="mini-btn" data-act="edit">수정</button>
+        <button class="mini-btn move" data-act="move">이동</button>
+        <button class="mini-btn danger" data-act="delete">삭제</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  tl.querySelectorAll(".receipt").forEach(card=>{
+    const id=card.dataset.id;
+    card.querySelector('[data-act="menu"]').onclick=()=>{
+      const a=card.querySelector("[data-actions]");
+      a.style.display=a.style.display==="none"?"flex":"none";
+    };
+    card.querySelector('[data-act="edit"]').onclick=()=>openSheet(records.find(r=>r.id===id));
+    card.querySelector('[data-act="move"]').onclick=()=>openMoveSheet(records.find(r=>r.id===id));
+    card.querySelector('[data-act="delete"]').onclick=async()=>{
+      if(confirm("이 정비 기록을 삭제할까요?")){ await remove(ref(db,`car_care/${id}`)); toast("삭제되었습니다"); }
+    };
+  });
+}
+
+function openMoveSheet(record){
+  const currentTab=tabs.find(t=>t.id===(record.tabId||"tab1"));
+  sheetEl.innerHTML=`
+    <div class="sheet-handle"></div>
+    <h3>다른 탭으로 이동</h3>
+    <p style="font-size:13px;color:var(--ink-faint);margin:0 0 14px;">현재 탭: <b style="color:#fff">${currentTab?currentTab.name:"?"}</b></p>
+    ${tabs.filter(t=>t.id!==(record.tabId||"tab1")).map(t=>`
+      <button class="move-tab-btn" data-moveto="${t.id}">
+        <span style="font-size:18px">📂</span> ${t.name}
+      </button>`).join("")}
+    <button class="cancel-link" id="moveCancelBtn">취소</button>`;
+  sheetEl.querySelectorAll("[data-moveto]").forEach(btn=>{
+    btn.onclick=async()=>{
+      await update(ref(db,`car_care/${record.id}`),{tabId:btn.dataset.moveto});
+      toast(`${tabs.find(t=>t.id===btn.dataset.moveto)?.name||""}으로 이동했어요`);
+      closeSheet();
+    };
+  });
+  sheetEl.querySelector("#moveCancelBtn").onclick=closeSheet;
+  scrim.classList.add("show");
+  sheetEl.classList.add("show");
+}
+
+function openSheet(record){
+  editingId=record?record.id:null;
+  formItems=record?JSON.parse(JSON.stringify(record.items||[])):[{label:"",amount:""}];
+  sheetEl.innerHTML=`
+    <div class="sheet-handle"></div>
+    <h3>${record?"정비 기록 수정":"정비 기록 추가"}</h3>
+    <div class="row2">
+      <div class="field"><label>날짜</label><input type="date" id="f-date" value="${record?record.date:new Date().toISOString().slice(0,10)}"/></div>
+      <div class="field"><label>주행거리(km)</label><input type="number" id="f-km" placeholder="선택" value="${record&&record.mileage!=null?record.mileage:""}"/></div>
+    </div>
+    <div class="field"><label>정비소 / 구매처</label><input type="text" id="f-vendor" placeholder="예: 공임나라 옥곡점" value="${record?record.vendor||"":""}"/></div>
+    <div class="field"><label>탭</label>
+      <select id="f-tab" style="width:100%;background:var(--bg-3);border:1px solid var(--line-dark);border-radius:10px;padding:10px 11px;color:#fff;font-size:14px;font-family:inherit;">
+        ${tabs.map(t=>`<option value="${t.id}" ${(record?record.tabId||"tab1":activeTabId)===t.id?"selected":""}>${t.name}</option>`).join("")}
+      </select>
+    </div>
+    <div class="field"><label>항목</label>
+      <div class="chip-row" id="chipRow"></div>
+      <div id="itemRows"></div>
+      <button class="add-item-btn" id="addItemBtn">+ 항목 직접 추가</button>
+    </div>
+    <div class="field"><label>메모</label><textarea id="f-memo" rows="2" placeholder="선택 사항">${record?record.memo||"":""}</textarea></div>
+    <div class="sheet-total"><span>합계</span><span class="v" id="sheetTotal">0원</span></div>
+    <button class="save-btn" id="saveBtn">저장</button>
+    <button class="cancel-link" id="cancelBtn">취소</button>`;
+  const chipRow=sheetEl.querySelector("#chipRow");
+  chipRow.innerHTML=Object.values(CATS).filter(c=>c.label!=="기타").map(c=>`<button type="button" class="chip" data-label="${c.label}">${c.label}</button>`).join("");
+  chipRow.querySelectorAll(".chip").forEach(ch=>{ ch.onclick=()=>{ formItems.push({label:ch.dataset.label,amount:""}); renderItemRows(); }; });
+  sheetEl.querySelector("#addItemBtn").onclick=()=>{ formItems.push({label:"",amount:""}); renderItemRows(); };
+  sheetEl.querySelector("#cancelBtn").onclick=closeSheet;
+  sheetEl.querySelector("#saveBtn").onclick=saveRecord;
+  renderItemRows();
+  scrim.classList.add("show");
+  sheetEl.classList.add("show");
+}
+
+function renderItemRows(){
+  const wrap=sheetEl.querySelector("#itemRows");
+  if(!wrap) return;
+  wrap.innerHTML=formItems.map((it,idx)=>`
+    <div class="item-row">
+      <input class="label-in" data-idx="${idx}" data-f="label" placeholder="항목명" value="${it.label||""}"/>
+      <input class="amount-in" type="number" data-idx="${idx}" data-f="amount" placeholder="금액" value="${it.amount===""||it.amount==null?"":it.amount}"/>
+      <button class="rm" data-idx="${idx}">×</button>
+    </div>`).join("");
+  wrap.querySelectorAll("input").forEach(inp=>{ inp.oninput=()=>{ formItems[Number(inp.dataset.idx)][inp.dataset.f]=inp.value; updateSheetTotal(); }; });
+  wrap.querySelectorAll(".rm").forEach(btn=>{ btn.onclick=()=>{ formItems.splice(Number(btn.dataset.idx),1); if(!formItems.length) formItems=[{label:"",amount:""}]; renderItemRows(); }; });
+  updateSheetTotal();
+}
+
+function updateSheetTotal(){
+  const total=formItems.reduce((s,i)=>s+(Number(i.amount)||0),0);
+  const el=sheetEl.querySelector("#sheetTotal");
+  if(el) el.textContent=won(total);
+}
+
+async function saveRecord(){
+  const date=sheetEl.querySelector("#f-date").value;
+  const kmRaw=sheetEl.querySelector("#f-km").value;
+  const vendor=sheetEl.querySelector("#f-vendor").value.trim();
+  const memo=sheetEl.querySelector("#f-memo").value.trim();
+  const tabId=sheetEl.querySelector("#f-tab").value;
+  if(!date){ toast("날짜를 입력해주세요"); return; }
+  const cleanItems=formItems.filter(i=>(i.label||"").trim()!=="").map(i=>({label:i.label.trim(),amount:Number(i.amount)||0}));
+  if(!cleanItems.length){ toast("항목을 하나 이상 입력해주세요"); return; }
+  const payload={date,mileage:kmRaw===""?null:Number(kmRaw),vendor,tabId,items:cleanItems,total:cleanItems.reduce((s,i)=>s+i.amount,0),memo};
+  try{
+    if(editingId){ await update(ref(db,`car_care/${editingId}`),payload); toast("수정되었습니다"); }
+    else{ const nr=push(recordsRef); await set(nr,{...payload,createdAt:Date.now()}); toast("추가되었습니다"); }
+    if(payload.mileage!=null){ const curKm=manualKm!=null?manualKm:0; if(payload.mileage>curKm) await set(metaRef,payload.mileage); }
+    closeSheet();
+  }catch(e){ toast("저장 실패: "+e.message); }
+}
+</script>
+</body>
+</html>
