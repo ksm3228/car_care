@@ -309,7 +309,7 @@ function renderShell(user){
       <div class="topbar" id="topbarWrap"></div>
       <div class="tab-bar" id="tabBarWrap"></div>
       <div class="hero" id="heroWrap"></div>
-      <div class="section-title"><h2>다음 정비 예상</h2></div>
+      <div class="section-title" id="dueSectionTitle"><h2>다음 정비 예상</h2></div>
       <div class="due-scroll" id="dueWrap"></div>
       <div class="section-title"><h2>정비 기록</h2><span class="count" id="countLabel"></span></div>
       <div class="timeline" id="timeline"></div>
@@ -336,7 +336,7 @@ function renderTopbar(){
           <button class="inline-save" id="nameSaveBtn">저장</button>
           <button class="inline-cancel" id="nameCancelBtn">취소</button>
         </div>
-        <div class="sub">v2.0 · ${currentUser?currentUser.email:""}</div>
+        <div class="sub">v3.1 · ${currentUser?currentUser.email:""}</div>
       </div>
     </div>
     <button class="iconbtn" id="logoutBtn" title="로그아웃">⎋</button>`;
@@ -418,6 +418,10 @@ function openTabNameSheet(tab){
 
 function renderList(){
   if(!document.getElementById("heroWrap")) return;
+  const isStatsTab = activeTabId !== "tab3";
+  document.getElementById("heroWrap").style.display = isStatsTab ? "" : "none";
+  document.getElementById("dueSectionTitle").style.display = isStatsTab ? "" : "none";
+  document.getElementById("dueWrap").style.display = isStatsTab ? "" : "none";
   const tabRecords=records.filter(r=>(r.tabId||"tab1")===activeTabId);
   const withKm=tabRecords.filter(r=>r.mileage!=null).sort((a,b)=>(b.mileage||0)-(a.mileage||0));
   const derivedKm=withKm.length?withKm[0].mileage:0;
