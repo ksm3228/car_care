@@ -338,7 +338,7 @@ function renderTopbar(){
           <button class="inline-save" id="nameSaveBtn">저장</button>
           <button class="inline-cancel" id="nameCancelBtn">취소</button>
         </div>
-        <div class="sub">v2.2 · ${currentUser?currentUser.email:""}</div>
+        <div class="sub">v2.3 · ${currentUser?currentUser.email:""}</div>
       </div>
     </div>
     <button class="iconbtn" id="logoutBtn" title="로그아웃">⎋</button>`;
@@ -463,21 +463,35 @@ function renderList(){
 
   // due
   const dueCats=["engine","mission","fuel","brake","wiper","tire"];
-  document.getElementById("dueWrap").innerHTML=dueCats.map(key=>{
+  const dueRows=dueCats.map(key=>{
     const meta=CATS[key];
     let lastRec=null;
     for(const r of withKm){ if((r.items||[]).some(i=>detectCat(i.label)===key)){ lastRec=r; break; } }
-    if(!lastRec) return `<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status none">기록 없음</span><div class="due-bar-wrap"><div class="due-bar" style="width:0%;background:${meta.color}"></div></div><span class="due-km">—</span></div>`;
+    if(!lastRec) return {urgency:3,remain:Infinity,html:`<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status none">기록 없음</span><div class="due-bar-wrap"><div class="due-bar" style="width:0%;background:${meta.color}"></div></div><span class="due-km">—</span></div>`};
     const nextDue=lastRec.mileage+meta.interval, remain=nextDue-currentKm;
+    // 날짜 기반 체크 (hint에 "년" 포함 항목)
+    let dateOver=false, dateSoon=false;
+    if(meta.hint&&meta.hint.includes("년")){
+      const years=parseFloat(meta.hint);
+      if(!isNaN(years)){
+        const lastMs=new Date(lastRec.date+"T00:00:00").getTime();
+        const elapsedYears=(Date.now()-lastMs)/(1000*60*60*24*365.25);
+        if(elapsedYears>=years) dateOver=true;
+        else if(elapsedYears>=years*0.9) dateSoon=true;
+      }
+    }
     let statusClass="ok",statusText="정상";
-    if(remain<=0){statusClass="over";statusText="교체 필요";}
-    else if(remain<=5000){statusClass="soon";statusText="곧 교체";}
+    if(remain<=0||dateOver){statusClass="over";statusText="교체 필요";}
+    else if(remain<=5000||dateSoon){statusClass="soon";statusText="곧 교체";}
+    const urgency=statusClass==="over"?0:statusClass==="soon"?1:2;
     const pct=Math.min(100,Math.max(0,Math.round((currentKm-lastRec.mileage)/meta.interval*100)));
     const remainPct=100-pct;
-    const barColor=remain<=0?"var(--red)":remainPct>=50?"var(--green)":remainPct>=30?"var(--amber)":"var(--red)";
+    const barColor=(remain<=0||dateOver)?"var(--red)":remainPct>=50?"var(--green)":remainPct>=30?"var(--amber)":"var(--red)";
     const remainText=remain<=0?`<b style="color:var(--red)">+${Math.abs(remain).toLocaleString("ko-KR")}km</b>`:`<b>${remain.toLocaleString("ko-KR")}</b>km 남음`;
-    return `<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status ${statusClass}">${statusText}</span><div class="due-bar-wrap"><div class="due-bar" style="width:${pct}%;background:${barColor}"></div></div><span class="due-km">${remainText}</span><span class="due-last">${lastRec.date?fmtDate(lastRec.date):"-"}</span></div>`;
-  }).join("");
+    return {urgency,remain,html:`<div class="due-row"><span class="cat-name"><span class="swatch" style="background:${meta.color}"></span><span class="cat-name-inner">${meta.label}${meta.hint?`<span class="cat-hint">${meta.hint}</span>`:""}</span></span><span class="due-status ${statusClass}">${statusText}</span><div class="due-bar-wrap"><div class="due-bar" style="width:${pct}%;background:${barColor}"></div></div><span class="due-km">${remainText}</span><span class="due-last">${lastRec.date?fmtDate(lastRec.date):"-"}</span></div>`};
+  });
+  dueRows.sort((a,b)=>a.urgency-b.urgency||a.remain-b.remain);
+  document.getElementById("dueWrap").innerHTML=dueRows.map(r=>r.html).join("");
 
   document.getElementById("countLabel").textContent=`${tabRecords.length}건`;
 
